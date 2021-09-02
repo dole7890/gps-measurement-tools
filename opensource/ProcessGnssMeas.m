@@ -40,7 +40,9 @@ gnssMeas.FctSeconds = (unique(allRxMilliseconds))*1e-3;
 N = length(gnssMeas.FctSeconds);
 gnssMeas.ClkDCount  = zeros(N,1);
 gnssMeas.HwDscDelS  = zeros(N,1);
-gnssMeas.Svid       = unique(gnssRaw.Svid)'; %all the sv ids found in gnssRaw
+Svid                = repmat(unique(gnssRaw.Svid)',2,1);
+gnssMeas.Svid       = reshape(Svid,1,[]); % double sv for potential dual freq
+% gnssMeas.Svid       = unique(gnssRaw.Svid)'; %all the sv ids found in gnssRaw
 M = length(gnssMeas.Svid);
 gnssMeas.AzDeg      = zeros(1,M)+NaN;
 gnssMeas.ElDeg      = zeros(1,M)+NaN;
@@ -103,6 +105,7 @@ AdrM        = gnssRaw.AccumulatedDeltaRangeMeters;
 AdrSigmaM   = gnssRaw.AccumulatedDeltaRangeUncertaintyMeters;
 AdrState    = gnssRaw.AccumulatedDeltaRangeState;
 Cn0DbHz     = gnssRaw.Cn0DbHz;
+CarrFreqHz  = gnssRaw.CarrierFrequencyHz;
 
 %Now pack these vectors into the NxM matrices
 for i=1:N %i is index into gnssMeas.FctSeconds and matrix rows
@@ -121,6 +124,7 @@ for i=1:N %i is index into gnssMeas.FctSeconds and matrix rows
         gnssMeas.AdrSigmaM(i,k)  = AdrSigmaM(J(j));
         gnssMeas.AdrState(i,k)   = AdrState(J(j));
         gnssMeas.Cn0DbHz(i,k)    = Cn0DbHz(J(j));
+        gnssMeas.CarrFreqHz(i,k) = CarrFreqHz(J(j));
     end
     %save the hw clock discontinuity count for this epoch:
     gnssMeas.ClkDCount(i) = gnssRaw.HardwareClockDiscontinuityCount(J(1));
