@@ -62,11 +62,36 @@ PlotPvtStates(gpsPvt,prFileName);
 if any(any(isfinite(gnssMeas.AdrM) & gnssMeas.AdrM~=0))
     [gnssMeas]= ProcessAdr(gnssMeas);
     h6 = figure;
-    PlotAdr(gnssMeas,prFileName,colors);
+%     PlotAdr(gnssMeas,prFileName,colors);
+    PlotAdr(gnssMeas,prFileName);
     [adrResid]= GpsAdrResiduals(gnssMeas,allGpsEph,param.llaTrueDegDegM);drawnow
     h7 = figure;
-    PlotAdrResids(adrResid,gnssMeas,prFileName,colors);
+%     PlotAdrResids(adrResid,gnssMeas,prFileName,colors);
+    PlotAdrResids(adrResid,gnssMeas,prFileName);
 end
+
+figure()
+[gnssMeas] = ProcessAdr(gnssMeas);
+timeSeconds =adrResid.FctSeconds-adrResid.FctSeconds(1);%elapsed time in seconds
+for ii = 1:length(timeSeconds)
+    1;
+    
+end
+% yyaxis left
+plot(timeSeconds,gnssMeas.AdrM(:,33))
+hold on
+iCs = find(bitand(gnssMeas.AdrState(:,33),2^2));
+plot(timeSeconds(iCs),zeros(length(iCs),1),'xk')
+
+% yyaxis right
+GFC = diff(gnssMeas.AdrM(:,33)-gnssMeas.AdrM(:,34));
+idx = find(abs(GFC)>1);
+plot(timeSeconds(idx),zeros(length(idx),1),'r*')
+
+% Butterworth
+
+
+
 %% end of ProcessGnssMeasScript
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Copyright 2016 Google Inc.

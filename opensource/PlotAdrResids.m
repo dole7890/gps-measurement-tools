@@ -26,7 +26,7 @@ end
 
 M = length(adrResid.Svid);
 N = length(adrResid.FctSeconds);
-if nargin<3 || any(size(colors)~=[M,3])
+if nargin<4 || any(size(colors)~=[M,3])
     bGotColors = false;
 else
     bGotColors = true;

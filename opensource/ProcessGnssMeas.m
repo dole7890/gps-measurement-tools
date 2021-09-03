@@ -44,8 +44,8 @@ Svid                = repmat(unique(gnssRaw.Svid)',2,1);
 gnssMeas.Svid       = reshape(Svid,1,[]); % double sv for potential dual freq
 % gnssMeas.Svid       = unique(gnssRaw.Svid)'; %all the sv ids found in gnssRaw
 M = length(gnssMeas.Svid);
-gnssMeas.AzDeg      = zeros(1,M)+NaN;
-gnssMeas.ElDeg      = zeros(1,M)+NaN;
+gnssMeas.AzDeg      = zeros(N,M)+NaN;
+gnssMeas.ElDeg      = zeros(N,M)+NaN;
 gnssMeas.tRxSeconds = zeros(N,M)+NaN; %time of reception, seconds of gps week
 gnssMeas.tTxSeconds = zeros(N,M)+NaN; %time of transmission, seconds of gps week
 gnssMeas.PrM        = zeros(N,M)+NaN;
@@ -112,19 +112,25 @@ for i=1:N %i is index into gnssMeas.FctSeconds and matrix rows
     %get index of measurements within 1ms of this time tag
     J = find(abs(gnssMeas.FctSeconds(i)*1e3 - allRxMilliseconds)<1); 
     for j=1:length(J) %J(j) is index into gnssRaw.*
-        k = find(gnssMeas.Svid==gnssRaw.Svid(J(j)));
+        k = find(unique(gnssMeas.Svid)==gnssRaw.Svid(J(j)));
+        if gnssRaw.CarrierFrequencyHz(J(j))==1575420030
+            FreqType = -1; %L1
+        else
+            FreqType = 0; %L5
+        end
+        
         %k is the index into gnssMeas.Svid and matrix columns
-        gnssMeas.tRxSeconds(i,k) = tRxSeconds(J(j));
-        gnssMeas.tTxSeconds(i,k) = tTxSeconds(J(j));
-        gnssMeas.PrM(i,k)        = PrM(J(j));
-        gnssMeas.PrSigmaM(i,k)   = PrSigmaM(J(j));
-        gnssMeas.PrrMps(i,k)     = PrrMps(J(j));
-        gnssMeas.PrrSigmaMps(i,k)= PrrSigmaMps(J(j));
-        gnssMeas.AdrM(i,k)       = AdrM(J(j));
-        gnssMeas.AdrSigmaM(i,k)  = AdrSigmaM(J(j));
-        gnssMeas.AdrState(i,k)   = AdrState(J(j));
-        gnssMeas.Cn0DbHz(i,k)    = Cn0DbHz(J(j));
-        gnssMeas.CarrFreqHz(i,k) = CarrFreqHz(J(j));
+        gnssMeas.tRxSeconds(i,2*k+FreqType) = tRxSeconds(J(j));
+        gnssMeas.tTxSeconds(i,2*k+FreqType) = tTxSeconds(J(j));
+        gnssMeas.PrM(i,2*k+FreqType)        = PrM(J(j));
+        gnssMeas.PrSigmaM(i,2*k+FreqType)   = PrSigmaM(J(j));
+        gnssMeas.PrrMps(i,2*k+FreqType)     = PrrMps(J(j));
+        gnssMeas.PrrSigmaMps(i,2*k+FreqType)= PrrSigmaMps(J(j));
+        gnssMeas.AdrM(i,2*k+FreqType)       = AdrM(J(j));
+        gnssMeas.AdrSigmaM(i,2*k+FreqType)  = AdrSigmaM(J(j));
+        gnssMeas.AdrState(i,2*k+FreqType)   = AdrState(J(j));
+        gnssMeas.Cn0DbHz(i,2*k+FreqType)    = Cn0DbHz(J(j));
+        gnssMeas.CarrFreqHz(i,2*k+FreqType) = CarrFreqHz(J(j));
     end
     %save the hw clock discontinuity count for this epoch:
     gnssMeas.ClkDCount(i) = gnssRaw.HardwareClockDiscontinuityCount(J(1));
