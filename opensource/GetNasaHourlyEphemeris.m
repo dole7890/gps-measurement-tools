@@ -47,7 +47,7 @@ yearNumber4Digit = utcTime(1);
 yearNumber2Digit = rem(utcTime(1),100);
 dayNumber = DayOfYear(utcTime);
 
-hourlyZFile = sprintf('hour%03d0.%02dn.Z',dayNumber,yearNumber2Digit);
+hourlyZFile = sprintf('brdc%03d0.%02dn.Z',dayNumber,yearNumber2Digit);
 ephFilename = hourlyZFile(1:end-2);
 fullEphFilename = [dirName,ephFilename]; %full name (with directory specified)
 

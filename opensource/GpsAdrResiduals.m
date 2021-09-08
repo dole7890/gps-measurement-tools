@@ -1,4 +1,4 @@
-function [adrResid]= GpsAdrResiduals(gnssMeas,allGpsEph,llaDegDegM)
+function [adrResid,sat_pos]= GpsAdrResiduals(gnssMeas,allGpsEph,llaDegDegM)
 % [adrResid]= GpsAdrResiduals(gnssMeas,allGpsEph,llaDegDegM)
 % Compute residuals from GPS Accumulated Delta Ranges
 %
@@ -67,6 +67,8 @@ end
 adrResid.Svid0 = gnssMeas.Svid(j0);
 svid = gnssMeas.Svid;
 
+sat_pos = nan(length(gnssMeas.FctSeconds),2+length(unique(svid))*3);
+
 %% Compute expected pseudoranges
 prHatM = zeros(N,M)+NaN; %to store expected pseudoranges
 %"pseudo" here refers to the clock error in the satellite, not the receiver
@@ -90,6 +92,8 @@ for i=1:N
         %in ECEF coordinates at trx:
         dtflightSeconds = norm(xyz0M - svXyzTtxM)/GpsConstants.LIGHTSPEED;
         svXyzTrxM = FlightTimeCorrection(svXyzTtxM, dtflightSeconds);
+        sat_pos(i,1) = gnssMeas.FctSeconds(i);
+        sat_pos(i,2+(j-1)*3:1+j*3) = svXyzTrxM;
         prHatM(i,j) = norm(xyz0M - svXyzTrxM) - GpsConstants.LIGHTSPEED*dtsv;
         % Use of dtsv: dtsv>0 <=> pr too small
     end
