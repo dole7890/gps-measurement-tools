@@ -4,23 +4,17 @@ addpath('myfunction')
 % pseudoranges, C/No, and weighted least squares PVT solution
 %
 % you can run the data in pseudoranges log files provided for you: 
-<<<<<<< Updated upstream
-prFileName = 'pseudoranges_log_2016_06_30_21_26_07.txt'; %with duty cycling, no carrier phase
-=======
-% prFileName = 'gnss_log_2021_07_06_17_14_24.txt'; %with duty cycling, no carrier phase
-prFileName = 'gnss_log_2021_07_06_17_13_55.txt'; %with duty cycling, no carrier phase
->>>>>>> Stashed changes
+% prFileName = 'pseudoranges_log_2016_06_30_21_26_07.txt'; %with duty cycling, no carrier phase
+prFileName = 'gnss_log_2021_07_06_17_14_24.txt'; %with duty cycling, no carrier phase
+% prFileName = 'gnss_log_2021_07_06_17_13_55.txt'; %with duty cycling, no carrier phase
 % prFileName = 'pseudoranges_log_2016_08_22_14_45_50.txt'; %no duty cycling, with carrier phase
 % as follows
 % 1) copy everything from GitHub google/gps-measurement-tools/ to 
 %    a local directory on your machine
 % 2) change 'dirName = ...' to match the local directory you are using:
-<<<<<<< Updated upstream
 dirName = '~/Documents/MATLAB/gpstools/opensource/demoFiles';
-=======
 dirName = 'C:\Users\Dong Kyeong Lee\Desktop\Research\ION2021\AndroidFaultMonitoring\210706_Baseline_Data\Antenna1\XiaomiBlack';
-dirName = 'C:\Users\Dong Kyeong Lee\Desktop\Research\ION2021\AndroidFaultMonitoring\210706_Baseline_Data\Antenna3\XiaomiWhite';
->>>>>>> Stashed changes
+% dirName = 'C:\Users\Dong Kyeong Lee\Desktop\Research\ION2021\AndroidFaultMonitoring\210706_Baseline_Data\Antenna3\XiaomiWhite';
 % 3) run ProcessGnssMeasScript.m script file 
 param.llaTrueDegDegM = [];
 
@@ -42,11 +36,6 @@ param.llaTrueDegDegM = [37.55261226, 127.07380044, 87.577];%Charleston Park Test
 dataFilter = SetDataFilter;
 if 0
 [gnssRaw,gnssAnalysis] = ReadGnssLogger(dirName,prFileName,dataFilter);
-save('temp.mat','gnssRaw','gnssAnalysis')
-else
-%     load('temp.mat')
-    load('ant1_mi8.mat')
-end
 if isempty(gnssRaw), return, end
 
 %% Get online ephemeris from Nasa ftp, first compute UTC Time from gnssRaw:
@@ -56,7 +45,12 @@ allGpsEph = GetNasaHourlyEphemeris(utcTime,dirName);
 if isempty(allGpsEph), return, end
 
 %% process raw measurements, compute pseudoranges:
-% [gnssMeas] = ProcessGnssMeas(gnssRaw);
+[gnssMeas] = ProcessGnssMeas(gnssRaw);
+
+else
+%     load('ant3_mi8.mat')
+    load('ant1_mi8.mat')
+end
 
 for ii=1:0
 %% plot pseudoranges and pseudorange rates
@@ -66,10 +60,22 @@ h2 = figure;
 PlotPseudorangeRates(gnssMeas,prFileName,colors);
 h3 = figure;
 PlotCno(gnssMeas,prFileName,colors);
+end
 
 %% compute WLS position and velocity
-gpsPvt = GpsWlsPvt(gnssMeas,allGpsEph);
+% if 0
+%     gpsPvt = GpsWlsPvt(gnssMeas,allGpsEph);
+%     save('temp.mat','gpsPvt')
+% else
+%     load('temp.mat')
+% end
+% figure();
+% vnorm = sqrt(sum(gpsPvt.allVelMps.^2'));
+% vnorm2 = sqrt(sum(gpsPvt.allVel2Mps.^2'));
+% plot(vnorm,'b');hold on
+% plot(vnorm,'r')
 
+for ii=1:0
 %% plot Pvt results
 h4 = figure;
 ts = 'Raw Pseudoranges, Weighted Least Squares solution';
@@ -83,19 +89,14 @@ for ii=1:0
 if any(any(isfinite(gnssMeas.AdrM) & gnssMeas.AdrM~=0))
     [gnssMeas]= ProcessAdr(gnssMeas);
     h6 = figure;
-<<<<<<< Updated upstream
     PlotAdr(gnssMeas,prFileName,colors);
     [adrResid]= GpsAdrResiduals(gnssMeas,allGpsEph,param.llaTrueDegDegM);drawnow
-=======
 %     PlotAdr(gnssMeas,prFileName,colors);
     PlotAdr(gnssMeas,prFileName);
     [adrResid,sat_pos]= GpsAdrResiduals(gnssMeas,allGpsEph,param.llaTrueDegDegM);drawnow
->>>>>>> Stashed changes
     h7 = figure;
     PlotAdrResids(adrResid,gnssMeas,prFileName,colors);
 end
-<<<<<<< Updated upstream
-=======
 end
 
 
@@ -153,7 +154,7 @@ for ii = 1:length(adrResid.ResidM(1,:))/2
     end
     set(gca,'fontsize',12)
     grid on
-    
+    continue
 %     figure();plot(detPhi)
 %     continue
     % Code Rate Minus Carrier Rate
@@ -189,10 +190,9 @@ for ii = 1:length(adrResid.ResidM(1,:))/2
 end
 end
 
-save('ant3_mi8.mat','gnssRaw','gnssAnalysis','gnssMeas','sat_pos')
+% save('ant1_mi8.mat','gnssRaw','gnssAnalysis','gnssMeas','sat_pos','fctSeconds','utcTime','allGpsEph')
 
 
->>>>>>> Stashed changes
 %% end of ProcessGnssMeasScript
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Copyright 2016 Google Inc.

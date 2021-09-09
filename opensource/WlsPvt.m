@@ -119,6 +119,7 @@ end
 prrHat = rrMps + xo(8) - GpsConstants.LIGHTSPEED*dtsvDot;
 zPrr = prs(:,jPrr)-prrHat;
 %z = Hx, premultiply by W: Wz = WHx, and solve for x:
+idx = find(isnan(zPrr));zPrr(idx) = [];Wrr(idx,:) = [];Wrr(:,idx) = [];H(idx,:) = []; % remove nans
 vHat = pinv(Wrr*H)*Wrr*zPrr;
 xHat = [xHat;vHat]; 
 

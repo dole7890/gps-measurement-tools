@@ -31,6 +31,7 @@ else
 end
 
 xo =zeros(8,1);%initial state: [center of the Earth, bc=0, velocities = 0]'
+xo2 =zeros(8,1);%initial state: [center of the Earth, bc=0, velocities = 0]'
 
 weekNum     = floor(gnssMeas.FctSeconds/GpsConstants.WEEKSEC);
 %TBD check for week rollover here (it is checked in ProcessGnssMeas, but
@@ -49,13 +50,26 @@ gpsPvt.FctSeconds      = gnssMeas.FctSeconds;
 gpsPvt.allLlaDegDegM   = zeros(N,3)+NaN; 
 gpsPvt.sigmaLLaM       = zeros(N,3)+NaN;
 gpsPvt.allBcMeters     = zeros(N,1)+NaN;
-gpsPvt.allVelMps       = zeros(N,3)+NaN;
+gpsPvt.allVelMps       = zeros(N,3)+NaN; % prr
+gpsPvt.allVel2Mps      = zeros(N,3)+NaN; % adr
 gpsPvt.sigmaVelMps     = zeros(N,3)+NaN;
 gpsPvt.allBcDotMps     = zeros(N,1)+NaN;
 gpsPvt.numSvs          = zeros(N,1);
 gpsPvt.hdop            = zeros(N,1)+inf;
 
+for i=1:N % compute adr rate
+    if i==N
+        gnssMeas.AdrrMps(i,:)=gnssMeas.AdrrMps(i-1,:); 
+    else
+        gnssMeas.AdrrMps(i,:) = ( gnssMeas.AdrM(i+1,:)-gnssMeas.AdrM(i,:) )./ (gnssMeas.tRxSeconds(i+1,:) - gnssMeas.tRxSeconds(i,:));
+    end
+end
+
 for i=1:N
+    if mod(i,floor(N/10))==0
+        disp(ceil(i/N*100))
+    end
+    
     iValid = find(isfinite(gnssMeas.PrM(i,:))); %index into valid svid
     svid    = gnssMeas.Svid(iValid)';
     
@@ -75,13 +89,25 @@ for i=1:N
     prrMps  = gnssMeas.PrrMps(i,iValid(iSv))';
     prrSigmaMps = gnssMeas.PrrSigmaMps(i,iValid(iSv))';
     
+    adrM    = gnssMeas.AdrM(i,iValid(iSv))';
+    adrrMps = gnssMeas.AdrrMps(i,iValid(iSv))';
+    adrSigmaM    = gnssMeas.AdrSigmaM(i,iValid(iSv))';
+    
     tRx = [ones(numSvs,1)*weekNum(i),gnssMeas.tRxSeconds(i,iValid(iSv))'];
     
     prs = [tRx, svid, prM, prSigmaM, prrMps, prrSigmaMps];
+    prs2 = [tRx, svid, prM, prSigmaM, adrrMps, adrSigmaM];
+    
+    if i==44
+        1
+    end
     
     xo(5:7) = zeros(3,1); %initialize speed to zero
+    xo2(5:7) = zeros(3,1); %adr speed
     [xHat,~,~,H,Wpr,Wrr] = WlsPvt(prs,gpsEph,xo);%compute WLS solution
+    [xHat2,~,~,H2,Wpr2,Wrr2] = WlsPvt(prs2,gpsEph,xo2);%compute WLS solution
     xo = xo + xHat;
+    xo2 = xo2 + xHat2;
     
     %extract position states
     llaDegDegM = Xyz2Lla(xo(1:3)');
@@ -92,7 +118,9 @@ for i=1:N
     RE2N = RotEcef2Ned(llaDegDegM(1),llaDegDegM(2));
     %NOTE: in real-time code compute RE2N once until position changes
     vNed = RE2N*xo(5:7); %velocity in NED
+    vNed2 = RE2N*xo2(5:7);
     gpsPvt.allVelMps(i,:) = vNed;
+    gpsPvt.allVelMps2(i,:) = vNed2;
     gpsPvt.allBcDotMps(i) = xo(8);
     
     %compute HDOP
